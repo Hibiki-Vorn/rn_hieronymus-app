@@ -15,16 +15,30 @@ export default function BoxGrid() {
           </Link>
         </View>
         <View style={styles.box} >
-          <Link href="/nfc">
+          <Link href="/gps">
             <View>
-              <Text style={styles.buttons}>Bluetooth</Text>
+              <Text style={styles.buttons}>GPS</Text>
             </View>
           </Link>
         </View>
         <View style={styles.box} >
-          <Link href="/gps">
+          <Link href="/sensors">
             <View>
-              <Text style={styles.buttons}>GPS</Text>
+              <Text style={styles.buttons}>Sensors</Text>
+            </View>
+          </Link>
+        </View>
+        <View style={styles.box} >
+          <Link href="/speech">
+            <View>
+              <Text style={styles.buttons}>Speech</Text>
+            </View>
+          </Link>
+        </View>
+        <View style={styles.box} >
+          <Link href="/network">
+            <View>
+              <Text style={styles.buttons}>Network</Text>
             </View>
           </Link>
         </View>

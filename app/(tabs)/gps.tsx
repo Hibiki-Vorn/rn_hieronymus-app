@@ -9,7 +9,6 @@ export default function GPSExample() {
     const [watching, setWatching] = useState(false);
     const subscriptionRef = useRef<Location.LocationSubscription | null>(null);
 
-    // Get location once
     const getLocation = async () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
@@ -23,7 +22,7 @@ export default function GPSExample() {
         setLocation(loc);
     };
 
-    // Start or stop watching
+    
     const toggleWatching = async () => {
         if (!watching) {
         const { status } = await Location.requestForegroundPermissionsAsync();
@@ -35,8 +34,8 @@ export default function GPSExample() {
         const sub = await Location.watchPositionAsync(
             {
             accuracy: Location.Accuracy.High,
-            timeInterval: 1000, // update every second
-            distanceInterval: 1, // update every 1 meter
+            timeInterval: 1000,
+            distanceInterval: 1,
             },
             (loc) => setLocation(loc)
         );
@@ -85,21 +84,21 @@ export default function GPSExample() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#151718',
+        backgroundColor: 'black',
         alignItems: 'center',
         justifyContent: 'center',
         padding: 20,
     },
     button: {
-        flexDirection: 'row',       // 横向排列
-        alignItems: 'center',       // 垂直居中
-        justifyContent: 'space-between', // 两端对齐
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
         backgroundColor: '#007bff',
         paddingHorizontal: 16,
         paddingVertical: 12,
         marginBottom: 10,
         borderRadius: 10,
-        width: 200,                 // 固定宽度，方便布局
+        width: 200,
     },
     emoji: {
         fontSize: 24,

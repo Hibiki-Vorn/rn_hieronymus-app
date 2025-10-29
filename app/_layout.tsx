@@ -32,6 +32,6 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#151718', // 全局背景色
+    backgroundColor: 'black', // 全局背景色
   },
 });

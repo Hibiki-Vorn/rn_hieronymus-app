@@ -1,12 +1,24 @@
+import Constants from 'expo-constants';
 import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import NfcManager, { NdefRecord, NfcEvents, TagEvent } from 'react-native-nfc-manager';
 
-NfcManager.isSupported().then((b)=>{
-  if (b) {
-    NfcManager.start()
-  }
-})
+const isExpoGo = Constants.executionEnvironment === 'storeClient';
+
+if (!isExpoGo) {
+  NfcManager.isSupported().then((b)=>{
+    if (b) {
+      NfcManager.start()
+    }
+  })
+
+} else {
+  console.log('Expo Go do not support');
+}
+
+
+
+
 
 export default function AutoReadNFC() {
   const [tag, setTag] = useState<TagEvent | null>(null);
@@ -22,11 +34,9 @@ export default function AutoReadNFC() {
         Alert.alert('Tag Detected', `Content: ${text}`);
       }
 
-      // 读取完成后注销，防止重复触发
       NfcManager.unregisterTagEvent().catch(() => {});
     });
 
-    // 开始监听
     NfcManager.registerTagEvent({
       alertMessage: 'Ready to scan NFC tag...',
     }).catch(console.warn);
@@ -52,7 +62,22 @@ export default function AutoReadNFC() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#151718', padding: 20 },
-  title: { fontSize: 22, color: '#00e0ff', fontWeight: 'bold', marginBottom: 20 },
-  text: { color: '#aaa', fontSize: 16, textAlign: 'center' },
+  container: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    backgroundColor: 'black', 
+    padding: 20 
+  },
+  title: { 
+    fontSize: 22, 
+    color: '#00e0ff', 
+    fontWeight: 'bold', 
+    marginBottom: 20 
+  },
+  text: { 
+    color: '#aaa', 
+    fontSize: 16, 
+    textAlign: 'center' 
+  },
 });
