@@ -1,19 +1,9 @@
-import { Link } from 'expo-router';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 export default function HomeScreen() {
   return (
     <View style={styles.main}>
-      <Image
-          source={require('@/assets/images/index-logo.png')}
-          style={styles.reactLogo}
-        />
-      <Text style={styles.text}>Hieronymus's App</Text>
-      <Link href='/explore'>
-        <View>
-          <Text style={styles.buttons}>Open App Now</Text>
-        </View>
-      </Link>
+      <Text style={styles.text}>Bluetooth</Text>
     </View>
   );
 }
