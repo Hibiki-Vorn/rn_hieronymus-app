@@ -1,18 +1,17 @@
 import { Accelerometer, Barometer, Gyroscope, Magnetometer } from 'expo-sensors';
 import React, { useEffect, useState } from 'react';
-import { Button, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-type SensorType = 'Accelerometer' | 'Gyroscope' | 'Magnetometer' | 'Barometer';
+type SensorType = 'Accelerometer' | 'Gyroscope' | 'Magnetometer' | 'Barometer' | null;
 
 export default () => {
-  const [sensorType, setSensorType] = useState<SensorType>('Accelerometer');
+  const [sensorType, setSensorType] = useState<SensorType>(null);
   const [data, setData] = useState<any>({});
   const [subscription, setSubscription] = useState<any>(null);
 
-  // 设置传感器更新间隔（ms）
   const UPDATE_INTERVAL = 200;
 
-  const bgColor = (t: string):string => {
+  const bgColor = (t: SensorType):string => {
     if (t === sensorType) {
       return "#642fc5ff"
     }
@@ -20,13 +19,12 @@ export default () => {
   }
 
   useEffect(() => {
-    // 切换传感器时重新订阅
     subscribe(sensorType);
     return () => unsubscribe();
   }, [sensorType]);
 
   const subscribe = (type: SensorType) => {
-    unsubscribe(); // 先取消之前的订阅
+    unsubscribe();
     let sub: any;
     switch (type) {
       case 'Accelerometer':
@@ -63,7 +61,8 @@ export default () => {
           <Text style={styles.dataText}>Altitude: {data.relativeAltitude?.toFixed(2)} m</Text>
         </>
       );
-    } else {
+    }
+    if (sensorType !== null) {
       return (
         <>
           <Text style={styles.dataText}>x: {data.x?.toFixed(2)}</Text>
@@ -71,12 +70,31 @@ export default () => {
           <Text style={styles.dataText}>z: {data.z?.toFixed(2)}</Text>
         </>
       );
+    } else {
+      return (
+        <>
+          <Text style={styles.dataText}>Please select a sensor</Text>
+        </>
+      );
     }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.head}>Expo Sensors Demo</Text>
+      <View style={styles.row}>
+        <Text style={styles.head}>Sensors</Text>
+        {(()=>{
+          if (sensorType !== null) {
+            return (
+              <Pressable style={styles.stopBttton} onPress={()=>{unsubscribe();setSensorType(null)}}>
+                <Text style={styles.text}>Stop Sensor</Text>
+              </Pressable>
+            )
+          }else {
+            return <></>
+          }
+        })()}
+      </View>
       <View style={styles.buttonRow}>
         {(['Accelerometer', 'Gyroscope', 'Magnetometer', 'Barometer'] as SensorType[]).map((type) => (
           <Pressable key={type} onPress={() => setSensorType(type)}>
@@ -93,7 +111,6 @@ export default () => {
         <Text style={styles.sensorLabel}>{sensorType} Data:</Text>
         {renderData()}
       </View>
-      <Button title="Stop Sensor" onPress={unsubscribe} color="red" />
     </ScrollView>
   );
 }
@@ -110,11 +127,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    //marginBottom: 30,
   },
   dataContainer: {
-    alignItems: 'center',
     marginBottom: 30,
+    width: "70%"
   },
   sensorLabel: {
     fontSize: 20,
@@ -126,7 +142,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "white",
     textAlign:"left",
-    width:"72.5%"
+    marginLeft: 10,
   },
   buttton: {
     alignItems: 'center',
@@ -140,15 +156,38 @@ const styles = StyleSheet.create({
     width: 130,
     textAlign: 'center'
   },
+  stopBttton: {
+    alignItems: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginVertical: 10,
+    marginHorizontal: 10,
+    borderRadius: 10,
+    fontWeight: "bold",
+    width: 110,
+    textAlign: 'center',
+    backgroundColor: "red",
+    height: 44,
+  },
   head: {
     color:"#007bff",
-    marginTop: 30,
-    marginLeft: 15,
-    marginBottom: 10,
     fontSize: 30,
     textAlign: "left",
     fontWeight: "bold",
     bottom: 20,
-  }
+    paddingTop: 30,
+  },
+  text: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  row: {
+    flexDirection: 'row',
+    //alignItems: 'center',
+    width: '85%',
+    marginTop: 30,
+    marginLeft: 15,
+    marginBottom: 10,
+  },
 });
 
