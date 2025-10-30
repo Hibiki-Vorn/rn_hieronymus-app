@@ -1,44 +1,73 @@
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import React, { useEffect, useState } from 'react';
-import { Alert, StyleSheet, Text, ToastAndroid, View } from 'react-native';
+import { Alert, Linking, Platform, StyleSheet, Text, ToastAndroid, View } from 'react-native';
 import NfcManager, { NdefRecord, NfcEvents, TagEvent } from 'react-native-nfc-manager';
 
 export default function AutoReadNFC() {
   const [tag, setTag] = useState<TagEvent | null>(null);
 
   useEffect(() => {
-
-    if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
-      NfcManager.isSupported()
-        .then(supported => {
-          if (supported) {
-            NfcManager.start();
-            ToastAndroid.show('Good! NFC supported', ToastAndroid.LONG);
-          } else {
-            ToastAndroid.show('NFC not supported', ToastAndroid.LONG);
-          }
-        })
-        .catch(err => ToastAndroid.show('NFC check failed', ToastAndroid.LONG));
-    } else {
-      ToastAndroid.show(`Running in ${Constants.executionEnvironment} – NFC not available`, ToastAndroid.LONG);
-    }
-
-    NfcManager.setEventListener(NfcEvents.DiscoverTag, (newTag: TagEvent) => {
-      console.log('Tag detected:', newTag);
-      setTag(newTag);
-
-      if (newTag.ndefMessage && newTag.ndefMessage.length > 0) {
-        const ndefRecord: NdefRecord = newTag.ndefMessage[0];
-        const text = new TextDecoder().decode(ndefRecord.payload as any);
-        Alert.alert('Tag Detected', `Content: ${text}`);
+    async function initNFC() {
+      if (Constants.executionEnvironment !== ExecutionEnvironment.StoreClient) {
+        ToastAndroid.show(
+          `Running in ${Constants.executionEnvironment} – NFC not available`,
+          ToastAndroid.LONG
+        );
+        return;
       }
 
-      NfcManager.unregisterTagEvent().catch(() => {});
-    });
+      try {
+        const supported = await NfcManager.isSupported();
+        if (!supported) {
+          ToastAndroid.show('NFC not supported', ToastAndroid.LONG);
+          return;
+        }
 
-    NfcManager.registerTagEvent({
-      alertMessage: 'Ready to scan NFC tag...',
-    }).catch(console.warn);
+        await NfcManager.start();
+        ToastAndroid.show('Good! NFC supported', ToastAndroid.LONG);
+
+        const enabled = await NfcManager.isEnabled();
+        if (!enabled) {
+          Alert.alert(
+            'NFC did not turn on',
+            'Please turn on NFC in system setting.',
+            [
+              {
+                text: 'Goto turn on',
+                onPress: () => {
+                  if (Platform.OS === 'android') {
+                    Linking.openSettings();
+                  }
+                },
+              },
+              { text: 'Cancel', style: 'cancel' },
+            ]
+          );
+        }
+
+        NfcManager.setEventListener(NfcEvents.DiscoverTag, (newTag: TagEvent) => {
+          console.log('Tag detected:', newTag);
+          setTag(newTag);
+
+          if (newTag.ndefMessage && newTag.ndefMessage.length > 0) {
+            const ndefRecord: NdefRecord = newTag.ndefMessage[0];
+            const text = new TextDecoder().decode(ndefRecord.payload as any);
+            Alert.alert('Tag Detected', `Content: ${text}`);
+          }
+
+          NfcManager.unregisterTagEvent().catch(() => {});
+        });
+
+        await NfcManager.registerTagEvent({
+          alertMessage: 'Ready to scan NFC tag...',
+        });
+      } catch (err) {
+        console.warn('NFC init failed:', err);
+        ToastAndroid.show('NFC initialization failed', ToastAndroid.LONG);
+      }
+    }
+
+    initNFC();
 
     return () => {
       NfcManager.setEventListener(NfcEvents.DiscoverTag, null);

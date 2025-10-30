@@ -32,12 +32,12 @@ export default function App() {
         let totalBytes = 0;
         const startTime = Date.now();
 
-        for (let i = 0; i < 5; i++) { // 连续下载 5 次模拟测速
+        for (let i = 0; i < 5; i++) {
         try {
             const response = await fetch(fileUrl);
             const blob = await response.blob();
             totalBytes += blob.size;
-            const elapsed = (Date.now() - startTime) / 1000; // 秒
+            const elapsed = (Date.now() - startTime) / 1000;
             const kbps = (totalBytes * 8) / 1024 / elapsed;
             setSpeed(kbps);
         } catch (err) {
@@ -70,7 +70,6 @@ export default function App() {
         
         <Text style={styles.text}>Speed: {speed.toFixed(2)} kbps</Text>
 
-        {/* Speech 滑条控制 */}
         <View style={styles.sliderRow}>
             <Text style={styles.sliderLabel}>Rate: {rate.toFixed(2)}</Text>
             <Slider
