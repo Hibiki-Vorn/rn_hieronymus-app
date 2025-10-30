@@ -3,27 +3,26 @@ import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, ToastAndroid, View } from 'react-native';
 import NfcManager, { NdefRecord, NfcEvents, TagEvent } from 'react-native-nfc-manager';
 
-const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
-
-if (!isExpoGo) {
-  NfcManager.isSupported()
-    .then(supported => {
-      if (supported) {
-        NfcManager.start();
-        ToastAndroid.show('Good! NFC supported', ToastAndroid.LONG);
-      } else {
-        ToastAndroid.show('NFC not supported', ToastAndroid.LONG);
-      }
-    })
-    .catch(err => ToastAndroid.show('NFC check failed', ToastAndroid.LONG));
-} else {
-  ToastAndroid.show(`Running in ${Constants.executionEnvironment} – NFC not available`, ToastAndroid.LONG);
-}
-
 export default function AutoReadNFC() {
   const [tag, setTag] = useState<TagEvent | null>(null);
 
   useEffect(() => {
+
+    if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
+      NfcManager.isSupported()
+        .then(supported => {
+          if (supported) {
+            NfcManager.start();
+            ToastAndroid.show('Good! NFC supported', ToastAndroid.LONG);
+          } else {
+            ToastAndroid.show('NFC not supported', ToastAndroid.LONG);
+          }
+        })
+        .catch(err => ToastAndroid.show('NFC check failed', ToastAndroid.LONG));
+    } else {
+      ToastAndroid.show(`Running in ${Constants.executionEnvironment} – NFC not available`, ToastAndroid.LONG);
+    }
+
     NfcManager.setEventListener(NfcEvents.DiscoverTag, (newTag: TagEvent) => {
       console.log('Tag detected:', newTag);
       setTag(newTag);

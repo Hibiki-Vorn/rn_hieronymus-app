@@ -1,35 +1,105 @@
 import Slider from '@react-native-community/slider';
 import * as Speech from 'expo-speech';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Alert,
+  AlertButton,
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from 'react-native';
+
+let ttsReady = false;
+
+(async () => {
+  try {
+    const voices = await Speech.getAvailableVoicesAsync();
+    const validVoices =
+      Array.isArray(voices) && voices.length > 0 && voices.every(v => v?.identifier);
+
+    if (!validVoices) {
+      showTtsMissingAlert();
+      ttsReady = false
+    } else {
+      ttsReady = true
+    }
+  } catch (e) {
+    console.warn('TTS check failed:', e);
+    ttsReady = false
+  }
+})()
+
+function showTtsMissingAlert() {
+  const buttons: AlertButton[] = [{ text: 'OK', style: 'cancel' }];
+
+  if (Platform.OS === 'android') {
+    buttons.unshift({
+      text: 'Install Google TTS',
+      onPress: () =>
+        Linking.openURL('market://details?id=com.google.android.tts').catch(() =>
+          Linking.openURL(
+            'https://play.google.com/store/apps/details?id=com.google.android.tts'
+          )
+        ),
+    });
+  }
+
+  Alert.alert(
+    'TTS engine not detected',
+    'Please install or check system setting',
+    buttons
+  );
+}
+
 
 export default function App() {
-  const [text, setText] = useState("");
+  const [text, setText] = useState('');
   const [rate, setRate] = useState(1.0);
   const [pitch, setPitch] = useState(1.0);
   const [volume, setVolume] = useState(1.0);
 
   const speak = () => {
-    Speech.speak(text, {
-      rate,
-      pitch,
-      volume,
-    });
+    if (!ttsReady) {
+      showTtsMissingAlert();
+      return;
+    }
+
+    if (!text.trim()) {
+      Alert.alert('Please enter what you want to speak');
+      return;
+    }
+
+    try {
+      Speech.speak(text, {
+        rate,
+        pitch,
+        volume,
+        onError: (err) => console.warn('Speech Error:', err),
+      });
+    } catch (e) {
+      Alert.alert('Speak failed', `An error ocured: ${String(e)}`);
+    }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.head}>Speech</Text>
 
-      {/* 提示语 + Speak按钮 */}
       <View style={styles.row}>
         <Text style={styles.text}>Enter what you want to speak</Text>
-        <Pressable onPress={speak} style={({ pressed }) => [styles.button, pressed && styles.activeButton]}>
+        <Pressable
+          onPress={speak}
+          style={({ pressed }) => [styles.button, pressed && styles.activeButton]}
+        >
           <Text style={styles.buttonText}>Speak</Text>
         </Pressable>
       </View>
 
-      {/* 输入框 */}
       <TextInput
         multiline
         style={styles.input}
@@ -40,7 +110,6 @@ export default function App() {
         placeholderTextColor="#ccc"
       />
 
-      {/* Rate 滑条 */}
       <View style={styles.sliderRow}>
         <Text style={styles.sliderLabel}>Rate: {rate.toFixed(2)}</Text>
         <Slider
@@ -55,7 +124,6 @@ export default function App() {
         />
       </View>
 
-      {/* Pitch 滑条 */}
       <View style={styles.sliderRow}>
         <Text style={styles.sliderLabel}>Pitch: {pitch.toFixed(2)}</Text>
         <Slider
@@ -70,7 +138,6 @@ export default function App() {
         />
       </View>
 
-      {/* Volume 滑条 */}
       <View style={styles.sliderRow}>
         <Text style={styles.sliderLabel}>Volume: {volume.toFixed(2)}</Text>
         <Slider
@@ -92,7 +159,7 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 20,
-    justifyContent: "center",
+    justifyContent: 'center',
     backgroundColor: 'black',
     alignItems: 'center',
   },
@@ -100,7 +167,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 15,
-    width: '85%', // 保持提示文字 + 按钮行占屏幕宽度约85%
+    width: '85%',
   },
   text: {
     color: '#fff',
@@ -136,7 +203,7 @@ const styles = StyleSheet.create({
   sliderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '80%', // 控制滑条行占宽 80%
+    width: '80%',
     marginBottom: 15,
   },
   sliderLabel: {
@@ -150,13 +217,13 @@ const styles = StyleSheet.create({
     height: 40,
   },
   head: {
-    color: "#007bff",
+    color: '#007bff',
     marginTop: 30,
     marginLeft: 15,
     fontSize: 30,
-    textAlign: "left",
-    fontWeight: "bold",
+    textAlign: 'left',
+    fontWeight: 'bold',
     marginBottom: 20,
     alignSelf: 'flex-start',
-  }
+  },
 });
