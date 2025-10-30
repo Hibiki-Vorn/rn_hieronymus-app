@@ -23,6 +23,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    width:"100%"
   },
   reactLogo: {
     alignSelf: "center",
@@ -35,7 +36,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     textAlign: "center",
     fontWeight: "bold",
-    bottom: 10
+    bottom: 10,
   },
   buttons: {
     color:"#fff",
